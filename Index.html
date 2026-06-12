@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>TALMAGE SDE NetSchuss Lab – Sequence</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root {
+--bg-dark: #05070b;
+--bg-splash: #071019;
+--cyan: #7cefff;
+--cyan-soft: rgba(124, 239, 255, 0.25);
+--gold: #ffe08a;
+--green: #7cffb2;
+--accent-blue: #1f6cff;
+--text-main: #dbe6ea;
+--text-soft: #8ea7ad;
+--panel: #10171f;
+--panel-soft: #151f29;
+--desktop-bg: #050a10;
+--danger: #cb7676;
+--font-mono: "Lucida Sans Typewriter", "Courier New", monospace;
+}
+
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+}
+
+body {
+margin: 0;
+font-family: var(--font-mono);
+background: #000;
+color: var(--text-main);
+overflow: hidden;
+}
+
+.scene {
+position: fixed;
+inset: 0;
+display: flex;
+align-items: center;
+justify-content: center;
+background: #000;
+opacity: 0;
+pointer-events: none;
+transition: opacity 0.7s ease;
+}
+
+.scene.active {
+opacity: 1;
+pointer-events: auto;
+}
+
+/* BOOT */
+
+.scene-boot {
+background: #000;
+padding: 24px;
+}
+
+.boot-terminal {
+max-width: 960px;
+width: 100%;
+border: 1px solid #1b3b2a;
+background: radial-gradient(circle at top left, rgba(124,255,178,0.08), transparent 55%),
+#020403;
+padding: 18px 20px;
+color: var(--green);
+font-size: 14px;
+line-height: 1.6;
+box-shadow: 0 0 24px rgba(0,0,0,0.8);
+position: relative;
+overflow: hidden;
+}
+
+.boot-line {
+white-space: pre;
+overflow: hidden;
+border-right: 2px solid rgba(124,255,178,0.0);
+animation: type 2.2s steps(40, end) forwards;
+}
+
+.boot-line:nth-child(2) { animation-delay: 0.4s; }
+.boot-line:nth-child(3) { animation-delay: 0.8s; }
+.boot-line:nth-child(4) { animation-delay: 1.2s; }
+
+@keyframes type {
+from { width: 0; }
+to { width: 100%; }
+}
+
+.boot-logo {
+margin-top: 18px;
+text-align: center;
+letter-spacing: 0.22em;
+font-size: 22px;
+color: var(--cyan);
+text-shadow: 0 0 12px rgba(124,239,255,0.6);
+opacity: 0;
+transform: translateY(10px);
+animation: bootLogo 1.2s ease forwards;
+animation-delay: 1.8s;
+}
+
+@keyframes bootLogo {
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
+
+/* SPLASH */
+
+.scene-splash {
+background:
+radial-gradient(circle at 20% 0%, rgba(124,239,255,0.18), transparent 55%),
+radial-gradient(circle at 80% 100%, rgba(255,224,138,0.12), transparent 55%),
+radial-gradient(circle at center, #071019, #020509 70%);
+}
+
+.splash-core {
+text-align: center;
+max-width: 720px;
+padding: 24px;
+}
+
+.splash-logo {
+font-size: 40px;
+letter-spacing: 0.18em;
+color: var(--cyan);
+margin-bottom: 8px;
+text-shadow: 0 0 18px rgba(124,239,255,0.7);
+}
+
+.splash-sub {
+font-size: 16px;
+color: var(--text-soft);
+margin-bottom: 32px;
+}
+
+.splash-orbit {
+width: 260px;
+height: 260px;
+margin: 0 auto 28px;
+border-radius: 50%;
+border: 1px solid rgba(124,239,255,0.35);
+box-shadow:
+0 0 32px rgba(124,239,255,0.35),
+inset 0 0 22px rgba(10,18,26,0.9);
+position: relative;
+overflow: hidden;
+background: radial-gradient(circle at center, rgba(124,239,255,0.12), transparent 60%);
+}
+
+.splash-node {
+position: absolute;
+width: 8px;
+height: 8px;
+border-radius: 999px;
+background: var(--cyan);
+box-shadow: 0 0 10px rgba(124,239,255,0.9);
+top: 50%;
+left: 50%;
+transform-origin: -90px 0;
+animation: orbit 6s linear infinite;
+}
+
+.splash-node:nth-child(2) { animation-delay: -2s; }
+.splash-node:nth-child(3) { animation-delay: -4s; }
+
+@keyframes orbit {
+from { transform: rotate(0deg); }
+to { transform: rotate(360deg); }
+}
+
+.splash-progress-wrap {
+margin-top: 10px;
+}
+
+.splash-progress-label {
+font-size: 12px;
+color: var(--text-soft);
+margin-bottom: 6px;
+}
+
+.splash-progress-bar {
+width: 100%;
+height: 6px;
+border-radius: 999px;
+background: rgba(10,20,30,0.9);
+overflow: hidden;
+border: 1px solid rgba(124,239,255,0.35);
+}
+
+.splash-progress-fill {
+width: 0%;
+height: 100%;
+background: linear-gradient(90deg, var(--gold), var(--cyan));
+animation: splashFill 3.2s ease-out forwards;
+}
+
+@keyframes splashFill {
+to { width: 100%; }
+}
+
+/* LOGIN */
+
+.scene-login {
+background:
+radial-gradient(circle at top, rgba(124,239,255,0.12), transparent 55%),
+linear-gradient(180deg, #10171e 0%, #050a10 100%);
+padding: 16px;
+}
+
+.login-shell {
+width: min(420px, 100%);
+margin: 0 auto;
+border-radius: 12px;
+border: 1px solid rgba(92,135,150,0.6);
+background: linear-gradient(180deg, rgba(18,24,30,0.96), rgba(10,15,20,0.98));
+box-shadow:
+0 18px 40px rgba(0,0,0,0.7),
+inset 0 1px 0 rgba(255,255,255,0.05);
+padding: 22px 22px 18px;
+}
+
+.login-logo {
+text-align: center;
+margin-bottom: 18px;
+}
+
+.login-logo-main {
+font-size: 26px;
+letter-spacing: 0.18em;
+color: var(--cyan);
+margin-bottom: 4px;
+}
+
+.login-logo-sub {
+font-size: 12px;
+color: var(--text-soft);
+}
+
+.login-title {
+text-align: center;
+margin: 10px 0 18px;
+font-size: 16px;
+color: var(--gold);
+}
+
+.login-field {
+margin-bottom: 14px;
+}
+
+.login-label {
+font-size: 12px;
+color: var(--gold);
+margin-bottom: 4px;
+display: block;
+}
+
+.login-input {
+width: 100%;
+height: 40px;
+border-radius: 6px;
+border: 1px solid #5c8796;
+background: linear-gradient(180deg, #0a0f14, #05080b);
+color: var(--text-main);
+padding: 0 10px;
+font-family: var(--font-mono);
+font-size: 13px;
+}
+
+.login-input:focus {
+outline: none;
+border-color: var(--gold);
+box-shadow:
+0 0 0 1px rgba(255,224,138,0.25),
+0 0 0 4px rgba(255,224,138,0.08);
+}
+
+.login-actions {
+margin-top: 10px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+gap: 10px;
+flex-wrap: wrap;
+}
+
+.login-button {
+flex: 1;
+min-width: 130px;
+height: 40px;
+border-radius: 999px;
+border: 1px solid rgba(255,224,138,0.8);
+background: linear-gradient(180deg, #d6b35c, #a48133);
+color: #11181f;
+font-weight: 700;
+font-size: 13px;
+cursor: pointer;
+font-family: var(--font-mono);
+box-shadow:
+0 4px 12px rgba(0,0,0,0.6),
+inset 0 1px 0 rgba(255,255,255,0.2);
+transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+.login-button:hover {
+filter: brightness(1.06);
+transform: translateY(-1px);
+}
+
+.login-links {
+margin-top: 10px;
+display: flex;
+justify-content: space-between;
+font-size: 11px;
+color: var(--text-soft);
+}
+
+.login-links span {
+cursor: pointer;
+text-decoration: underline;
+}
+
+.login-status-row {
+margin-top: 14px;
+display: flex;
+justify-content: space-between;
+font-size: 11px;
+color: var(--text-soft);
+}
+
+.status-led {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+}
+
+.status-dot {
+width: 9px;
+height: 9px;
+border-radius: 999px;
+box-shadow: 0 0 8px currentColor;
+}
+
+.status-dot.green { background: var(--green); color: var(--green); }
+.status-dot.red { background: var(--danger); color: var(--danger); }
+
+/* DESKTOP */
+
+.scene-desktop {
+background:
+radial-gradient(circle at top, rgba(124,239,255,0.12), transparent 55%),
+radial-gradient(circle at bottom, rgba(255,224,138,0.08), transparent 55%),
+#020509;
+color: var(--text-main);
+font-size: 13px;
+}
+
+.desktop-wrap {
+width: 100%;
+height: 100%;
+position: relative;
+overflow: hidden;
+}
+
+.desktop-bg-grid {
+position: absolute;
+inset: 0;
+background-image:
+linear-gradient(rgba(124,239,255,0.06) 1px, transparent 1px),
+linear-gradient(90deg, rgba(124,239,255,0.06) 1px, transparent 1px);
+background-size: 40px 40px;
+opacity: 0.25;
+}
+
+.desktop-topbar {
+position: absolute;
+top: 0;
+left: 0;
+right: 0;
+height: 32px;
+background: linear-gradient(180deg, #151f29, #0b1118);
+border-bottom: 1px solid rgba(124,239,255,0.35);
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 0 10px;
+font-size: 11px;
+z-index: 2;
+}
+
+.desktop-topbar span {
+color: var(--text-soft);
+}
+
+.desktop-topbar strong {
+color: var(--cyan);
+}
+
+.desktop-main {
+position: absolute;
+inset: 32px 0 0 0;
+padding: 18px;
+display: flex;
+gap: 16px;
+}
+
+.desktop-window {
+flex: 1;
+border-radius: 8px;
+border: 1px solid rgba(124,239,255,0.4);
+background: radial-gradient(circle at top left, rgba(124,239,255,0.12), transparent 55%),
+rgba(5,10,16,0.96);
+box-shadow:
+0 16px 32px rgba(0,0,0,0.8),
+inset 0 1px 0 rgba(255,255,255,0.04);
+display: flex;
+flex-direction: column;
+overflow: hidden;
+transform: scale(0.94);
+opacity: 0;
+animation: desktopIn 0.7s ease forwards;
+animation-delay: 0.2s;
+}
+
+.desktop-window-header {
+height: 26px;
+background: linear-gradient(180deg, #1b2732, #111821);
+border-bottom: 1px solid rgba(124,239,255,0.4);
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 0 8px;
+font-size: 11px;
+color: var(--text-soft);
+}
+
+.desktop-leds {
+display: flex;
+gap: 5px;
+}
+
+.desktop-led {
+width: 8px;
+height: 8px;
+border-radius: 999px;
+box-shadow: 0 0 6px currentColor;
+}
+
+.desktop-led.red { background: var(--danger); color: var(--danger); }
+.desktop-led.amber { background: var(--gold); color: var(--gold); }
+.desktop-led.green { background: var(--green); color: var(--green); }
+
+.desktop-window-body {
+flex: 1;
+padding: 10px 12px;
+font-size: 12px;
+color: var(--text-main);
+display: flex;
+flex-direction: column;
+gap: 6px;
+}
+
+.terminal-line {
+font-family: var(--font-mono);
+color: var(--green);
+white-space: pre;
+}
+
+.terminal-cursor {
+display: inline-block;
+width: 7px;
+height: 12px;
+background: var(--green);
+margin-left: 2px;
+animation: blink 0.8s steps(1, end) infinite;
+}
+
+@keyframes blink {
+0%, 50% { opacity: 1; }
+50.01%, 100% { opacity: 0; }
+}
+
+@keyframes desktopIn {
+to {
+opacity: 1;
+transform: scale(1);
+}
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 720px) {
+.desktop-main {
+flex-direction: column;
+}
+}
+</style>
+</head>
+<body>
+
+<!-- BOOT -->
+<section class="scene scene-boot active" id="scene-boot">
+<div class="boot-terminal">
+<div class="boot-line">TALMAGE SDE NetSchuss Lab</div>
+<div class="boot-line">Initializing Solaris Derivated Kernel...</div>
+<div class="boot-line">Network Interface: talmage.cnl</div>
+<div class="boot-line">Security Modules: Nominal</div>
+<div class="boot-logo">TALMAGE SDE</div>
+</div>
+</section>
+
+<!-- SPLASH -->
+<section class="scene scene-splash" id="scene-splash">
+<div class="splash-core">
+<div class="splash-logo">TALMAGE SDE</div>
+<div class="splash-sub">Solaris Derivated Edition • Secure Access Manager</div>
+
+<div class="splash-orbit">
+<div class="splash-node"></div>
+<div class="splash-node"></div>
+<div class="splash-node"></div>
+</div>
+
+<div class="splash-progress-wrap">
+<div class="splash-progress-label">Loading Workspace SDE‑01…</div>
+<div class="splash-progress-bar">
+<div class="splash-progress-fill"></div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- LOGIN -->
+<section class="scene scene-login" id="scene-login">
+<div class="login-shell">
+<div class="login-logo">
+<div class="login-logo-main">TALMAGE SDE</div>
+<div class="login-logo-sub">NetSchuss Lab • Authentification station de travail</div>
+</div>
+
+<div class="login-title">Connexion</div>
+
+<div class="login-field">
+<label class="login-label" for="user">Nom d’utilisateur</label>
+<input id="user" class="login-input" type="text" value="guest">
+</div>
+
+<div class="login-field">
+<label class="login-label" for="pass">Mot de passe</label>
+<input id="pass" class="login-input" type="password" placeholder="••••••••••••">
+</div>
+
+<div class="login-actions">
+<button class="login-button" id="login-btn">Se connecter</button>
+</div>
+
+<div class="login-links">
+<span>Mot de passe oublié ?</span>
+<span>Support technique</span>
+</div>
+
+<div class="login-status-row">
+<div class="status-led">
+<span class="status-dot green"></span>
+<span>Security: Nominal</span>
+</div>
+<div class="status-led">
+<span class="status-dot green"></span>
+<span>Workspace: SDE‑01</span>
+</div>
+</div>
+</div>
+</section>
+
+<!-- DESKTOP -->
+<section class="scene scene-desktop" id="scene-desktop">
+<div class="desktop-wrap">
+<div class="desktop-bg-grid"></div>
+
+<div class="desktop-topbar">
+<span><strong>TALMAGE SDE</strong> • Solaris Derivated Workspace</span>
+<span>CPU: 12% • NET: 1.2Gb/s • SECURITY: <strong>Nominal</strong></span>
+</div>
+
+<div class="desktop-main">
+<div class="desktop-window">
+<div class="desktop-window-header">
+<div class="desktop-leds">
+<span class="desktop-led red"></span>
+<span class="desktop-led amber"></span>
+<span class="desktop-led green"></span>
+</div>
+<span>/usr/dt/config/Xlogin</span>
+</div>
+<div class="desktop-window-body">
+<div class="terminal-line">talmage@sde01:~ <span class="terminal-cursor"></span></div>
+</div>
+</div>
+
+<div class="desktop-window">
+<div class="desktop-window-header">
+<div class="desktop-leds">
+<span class="desktop-led green"></span>
+</div>
+<span>Session Monitor • SDE‑01</span>
+</div>
+<div class="desktop-window-body">
+<div>Session: TALMAGE SDE NetSchuss Lab</div>
+<div>Host: talmage.cnl</div>
+<div>Domain: sde.netschuss.lab</div>
+<div>Mode: graphical login</div>
+<div>Locale: fr_FR.UTF‑8</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<script>
+// Simple scene manager
+const bootScene = document.getElementById('scene-boot');
+const splashScene = document.getElementById('scene-splash');
+const loginScene = document.getElementById('scene-login');
+const desktopScene = document.getElementById('scene-desktop');
+const loginBtn = document.getElementById('login-btn');
+
+function showScene(scene) {
+[bootScene, splashScene, loginScene, desktopScene].forEach(s => {
+if (!s) return;
+s.classList.remove('active');
+});
+scene.classList.add('active');
+}
+
+// Timeline:
+// 0s : boot
+// 4s : splash
+// 8s : login
+// click: desktop
+
+setTimeout(() => showScene(splashScene), 4000);
+setTimeout(() => showScene(loginScene), 8000);
+
+loginBtn.addEventListener('click', () => {
+// petit flash visuel simulé
+showScene(desktopScene);
+});
+</script>
+</body>
+</html>
